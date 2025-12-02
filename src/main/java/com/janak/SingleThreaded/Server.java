@@ -7,19 +7,34 @@ import java.io.PrintWriter;
 import java.net.*;
 
 public class Server {
+
     public void run() throws IOException {
         int port = 8010;
-        ServerSocket socket = new ServerSocket(port);
-        socket.setSoTimeout(10000);
-        while(true){
-            System.out.println(" server is listening on" + port);
-            Socket acceptedConnection = socket.accept();
-            System.out.println("connection accepted from cli" + acceptedConnection.getRemoteSocketAddress());
+        ServerSocket serverSocket = new ServerSocket(port);
+        System.out.println("Server started. Listening on port " + port);
+
+        while (true) {
+            Socket acceptedConnection = serverSocket.accept();
+            System.out.println("Connection accepted from " + acceptedConnection.getRemoteSocketAddress());
+
             PrintWriter toClient = new PrintWriter(acceptedConnection.getOutputStream());
             BufferedReader fromClient = new BufferedReader(new InputStreamReader(acceptedConnection.getInputStream()));
+
+            // Read message from client
+            String message = fromClient.readLine();
+            System.out.println("Received from client: " + message);
+
+            // Send response to client
             toClient.println("hello from server");
+            toClient.flush();  // VERY IMPORTANT
+
+            // Close resources
+            fromClient.close();
+            toClient.close();
+            acceptedConnection.close();
         }
     }
+
     public static void main(String[] args) {
         Server server = new Server();
         try {
